@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Anime Recommendations</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-bold fa-tv text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">Anime Vault</h1>
+                    <p class="text-xs text-slate-400">Top 30 Anime Mengikut Genre</p>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative w-full sm:w-72">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="searchInput" placeholder="Cari tajuk anime..." 
+                    class="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+        </div>
+
+        <!-- Genre Filter Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3">
+            <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1" id="genreTabs">
+                <!-- Tabs generated dynamically -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Stats / Header Info -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 bg-slate-800/40 p-6 rounded-2xl border border-slate-800/80 gap-4">
+            <div>
+                <h2 id="currentCategoryTitle" class="text-2xl font-bold text-white mb-1">Semua Genre</h2>
+                <p id="currentCategoryDesc" class="text-sm text-slate-400">Menampilkan anime terbaik pilihan yang wajib anda tonton!</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold text-slate-400 bg-slate-800 px-4 py-2 rounded-xl w-fit">
+                <span><i class="fa-solid fa-film text-indigo-400 mr-1.5"></i> Total: <span id="animeCount" class="text-slate-200">150</span> Anime</span>
+                <span class="text-slate-600">|</span>
+                <span><i class="fa-solid fa-star text-amber-400 mr-1.5"></i> Top Rated</span>
+            </div>
+        </div>
+
+        <!-- Anime Grid -->
+        <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+            <!-- Anime cards will be rendered here via JS -->
+        </div>
+
+        <!-- Empty State (No search results) -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-500 text-2xl">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-300 mb-1">Carian Tidak Dijumpai</h3>
+            <p class="text-sm text-slate-500">Cuba cari dengan perkataan lain atau tukar genre.</p>
+        </div>
+    </main>
+
+    <!-- Modal Detail Anime -->
+    <div id="animeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row max-h-[90vh]">
+            <!-- Close Button -->
+            <button onclick="closeModal()" class="absolute top-3 right-3 z-10 bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 p-2 rounded-full transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <!-- Cover Image in Modal -->
+            <div class="md:w-1/2 h-64 md:h-auto relative bg-slate-950">
+                <img id="modalImg" src="" alt="Anime Cover" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent md:hidden"></div>
+            </div>
+
+            <!-- Content in Modal -->
+            <div class="p-6 md:w-1/2 flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <span id="modalGenre" class="inline-block px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">Genre</span>
+                    <h3 id="modalTitle" class="text-xl font-bold text-white mb-2">Tajuk Anime</h3>
+                    
+                    <!-- Rating -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <div id="modalStars" class="flex text-amber-400 text-sm"></div>
+                        <span id="modalScore" class="text-sm font-bold text-slate-300">4.8 / 5</span>
+                    </div>
+
+                    <p id="modalDesc" class="text-sm text-slate-400 leading-relaxed mb-4">Ringkasan sinopsis anime akan dipaparkan di sini...</p>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+                    <span><i class="fa-solid fa-clock text-slate-400 mr-1"></i> Recommended Watch</span>
+                    <span class="text-indigo-400 font-medium">Must Watch 🔥</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 mt-12 py-6 text-center text-xs text-slate-500">
+        <p>© 2026 Anime Vault. Dibina khas untuk peminat anime.</p>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // Data Anime: 5 Genre, 30 Anime Setiap Genre (Gambar Poster Rasmi Anime)
+        const animeData = {
+            "Action": [
+                { id: 101, title: "Attack on Titan", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/10/47347.jpg", desc: "Umat manusia berjuang bertahan hidup daripada raksasa gergasi dikenali sebagai Titan." },
+                { id: 102, title: "Demon Slayer", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1286/99889.jpg", desc: "Tanjiro bertarung dengan iblis demi menyelamatkan adiknya yang telah bertukar menjadi iblis." },
+                { id: 103, title: "Jujutsu Kaisen", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg", desc: "Yuji Itadori menelan jari sumpahan berkuasa tinggi dan menyertai sekolah sihir Jujutsu." },
+                { id: 104, title: "Fullmetal Alchemist: Brotherhood", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1208/94745.jpg", desc: "Dua beradik alkimia mencari Batu Bertuah untuk mengembalikan tubuh badan mereka." },
+                { id: 105, title: "One Piece", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/6/73245.jpg", desc: "Luffy dan anak kapalnya menjelajah lautan untuk mencari harta karun legenda, One Piece." },
+                { id: 106, title: "Hunter x Hunter", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1337/99013.jpg", desc: "Gon Freecss memulakan pengembaraan menjadi Hunter untuk mencari bapanya." },
+                { id: 107, title: "Bleach: Thousand-Year Blood War", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1908/120036.jpg", desc: "Ichigo Kurosaki bertarung dalam perang terakhir antara Shinigami dan Quincy." },
+                { id: 108, title: "My Hero Academia", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/10/78745.jpg", desc: "Deku berusaha menjadi wira teragung walaupun lahir tanpa kuasa kebolehan luar biasa." },
+                { id: 109, title: "One Punch Man", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/12/76049.jpg", desc: "Saitama boleh mengalahkan mana-mana musuh dengan hanya satu tumbukan." },
+                { id: 110, title: "Chainsaw Man", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1806/126216.jpg", desc: "Denji membuat perjanjian dengan iblis gergaji untuk hidup semula sebagai pemburu iblis." },
+                { id: 111, title: "Solo Leveling", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1747/140962.jpg", desc: "Pemburu paling lemah secara misteri mendapat kebolehan untuk meningkatkan aras kuasanya." },
+                { id: 112, title: "Naruto Shippuden", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1565/111305.jpg", desc: "Naruto berusaha keras mempertahankan desanya dan membalas impian menjadi Hokage." },
+                { id: 113, title: "Dragon Ball Super", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/7/74606.jpg", desc: "Goku dan kawan-kawannya bertarung menentang dewa-dewa dari pelbagai alam semesta." },
+                { id: 114, title: "Fate/Zero", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/2/33063.jpg", desc: "Pertempuran rahsia antara 7 ahli sihir demi memiliki Cawan Suci yang memakbulkan hajat." },
+                { id: 115, title: "Mob Psycho 100", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/8/80356.jpg", desc: "Budak sekolah yang mempunyai kuasa psikik luar biasa cuba hidup seperti remaja biasa." },
+                { id: 116, title: "Vinland Saga", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1500/103005.jpg", desc: "Kisah dendam dan pencarian kedamaian seorang pahlawan Viking bernama Thorfinn." },
+                { id: 117, title: "Cyberpunk: Edgerunners", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1818/126436.jpg", desc: "Seorang budak jalanan cuba bertahan dalam bandar masa depan berteknologi tinggi." },
+                { id: 118, title: "Black Clover", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/2/88336.jpg", desc: "Asta yang lahir tanpa sihir bercita-cita menjadi Raja Sihir dengan menggunakan pedang anti-sihir." },
+                { id: 119, title: "Tokyo Ghoul", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/5/64449.jpg", desc: "Kaneki menjadi separuh manusia separuh Ghoul selepas pembedahan menyelamatkan nyawanya." },
+                { id: 120, title: "JoJo's Bizarre Adventure", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/3/40409.jpg", desc: "Keturunan keluarga Joestar bertarung menentang kuasa jahat menerusi generasi." },
+                { id: 121, title: "Fire Force", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/1210/99863.jpg", desc: "Pasukan bomba khas bertarung menentang manusia yang terbakar secara tiba-tiba." },
+                { id: 122, title: "Gurren Lagann", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/11/7243.jpg", desc: "Manusia bertempur dari bawah tanah ke angkasa lepas demi kebebasan." },
+                { id: 123, title: "Code Geass", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1032/135088.jpg", desc: "Lelouch mengguna kuasa Geass untuk memimpin pemberontakan menentang empayar." },
+                { id: 124, title: "Kill la Kill", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1423/117363.jpg", desc: "Ryuko mencari pembunuh bapanya menggunakan pakaian berperang khas." },
+                { id: 125, title: "Dororo", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1879/100467.jpg", desc: "Seorang pahlawan separa pembuat mekanikal bertarung memburu iblis untuk mendapatkan anggota tubuhnya kembali." },
+                { id: 126, title: "Akame ga Kill!", rating: 4.3, img: "https://cdn.myanimelist.net/images/anime/1429/95946.jpg", desc: "Kumpulan pembunuh rahsia bertarung menentang kerajaan yang rasuah." },
+                { id: 127, title: "Hellsing Ultimate", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/6/7333.jpg", desc: "Vampir paling berkuasa Alucard mempertahankan England daripada ancaman ghaib." },
+                { id: 128, title: "Bungou Stray Dogs", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/11/79832.jpg", desc: "Agensi penyiasat berkuasa luar biasa menyelesaikan kes-kes bahaya di Yokohama." },
+                { id: 129, title: "Kingdom", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/11/39717.jpg", desc: "Kisah anak yatim yang bercita-cita menjadi Jeneral Agung di zaman purba China." },
+                { id: 130, title: "Goblin Slayer", rating: 4.3, img: "https://cdn.myanimelist.net/images/anime/1200/96112.jpg", desc: "Seorang pahlawan bertekad untuk memburu dan menghapuskan setiap goblin yang wujud." }
+            ],
+            "Romance": [
+                { id: 201, title: "Kaguya-sama: Love Is War", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1295/106592.jpg", desc: "Dua pelajar elit enggan mengaku cinta dahulu lalu memulakan perang minda romantik." },
+                { id: 202, title: "Your Lie in April", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/3/67177.jpg", desc: "Pemain biola yang bersemangat membantu pemain piano mengatasi trauma silamnya." },
+                { id: 203, title: "Clannad: After Story", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/13/24647.jpg", desc: "Kisah suka duka perkahwinan dan cabaran kehidupan dewasa yang sangat menyentuh hati." },
+                { id: 204, title: "Horimiya", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1695/111486.jpg", desc: "Dua pelajar sekolah yang berbeza perwatakan menemui rahsia peribadi satu sama lain." },
+                { id: 205, title: "Toradora!", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/13/22123.jpg", desc: "Ryuuji dan Taiga saling membantu untuk mendekati rakan baik masing-masing." },
+                { id: 206, title: "Fruits Basket (2019)", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1447/99827.jpg", desc: "Tohru tinggal bersama keluarga Sohma yang disumpah bertukar menjadi haiwan zodiak." },
+                { id: 207, title: "My Dress-Up Darling", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1179/119897.jpg", desc: "Pembuat patung gelenyar membantu gadis popular menjahit pakaian cosplay." },
+                { id: 208, title: "The Angel Next Door Spoils Me Rotten", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1149/132597.jpg", desc: "Hubungan manis antara jiran sebelah yang bermula daripada meminjamkan payung." },
+                { id: 209, title: "Rascal Does Not Dream of Bunny Girl Senpai", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1301/93586.jpg", desc: "Sakuta membantu pelakon terkenal yang mengalami Sindrom Puberti ganjil." },
+                { id: 210, title: "Anohana: The Flower We Saw That Day", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/5/79697.jpg", desc: "Rakan-rakan zaman kanak-kanak berkumpul semula untuk menunaikan hajat roh sahabat mereka." },
+                { id: 211, title: "Kamisama Kiss", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/8/42917.jpg", desc: "Gadis biasa secara tidak sengaja menjadi dewa kuil dan jatuh cinta dengan rubah jadian." },
+                { id: 212, title: "ReLIFE", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/3/82147.jpg", desc: "Lelaki penganggur umur 27 tahun kembali menjadi pelajar sekolah tinggi melalui ubat rahsia." },
+                { id: 213, title: "Maid Sama!", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/6/25222.jpg", desc: "Presiden majlis pelajar bekerja secara rahsia di kafe pelayan wanita (maid)." },
+                { id: 214, title: "Kimi ni Todoke", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/12/21262.jpg", desc: "Gadis pemalu sering disalah anggap seram disukai oleh pelajar lelaki paling popular." },
+                { id: 215, title: "Bloom Into You", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1206/95951.jpg", desc: "Kisah cinta mendalam dan pencarian jati diri antara dua pelajar perempuan." },
+                { id: 216, title: "Ao Haru Ride", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/3/64835.jpg", desc: "Futaba bertemu kembali dengan cinta pertamanya di sekolah tinggi yang telah berubah perwatakan." },
+                { id: 217, title: "My Love Story!!", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/13/73229.jpg", desc: "Takeo yang bersaiz sado dan berhati emas jatuh cinta dengan gadis manis Rinko." },
+                { id: 218, title: "Wotakoi: Love is Hard for Otaku", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1283/91406.jpg", desc: "Komedi romantik antara empat rakan sekerja yang mempunyai hobi otaku." },
+                { id: 219, title: "The Quintessential Quintuplets", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1988/96434.jpg", desc: "Pelajar bijak menjadi tutor peribadi kepada lima kembar perempuan yang lemah akademik." },
+                { id: 220, title: "Golden Time", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/12/52091.jpg", desc: "Pelajar universiti amnesia berdepan dengan cinta baharu dan ingatan masa lalu." },
+                { id: 221, title: "Snow White with the Red Hair", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/9/75765.jpg", desc: "Ahli herba berambut merah melari diri dan memulakan hidup baru bersama putera raja." },
+                { id: 222, title: "Orange", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/8/80482.jpg", desc: "Menerima surat daripada diri sendiri pada masa depan untuk menyelamatkan kawan baik." },
+                { id: 223, title: "Plastic Memories", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/8/71783.jpg", desc: "Kisah cinta antara manusia dan android yang mempunyai had tempoh hayat." },
+                { id: 224, title: "Tomo-chan Is a Girl!", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/1302/131006.jpg", desc: "Gadis bersifat kelelakian berusaha membuatkan kawan baiknya melihat dia sebagai wanita." },
+                { id: 225, title: "Romantic Killer", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1373/128328.jpg", desc: "Gadis peminat video game dipaksa menjalani simulasi percintaan di alam nyata." },
+                { id: 226, title: "The Dangers in My Heart", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1739/134440.jpg", desc: "Pelajar pendiam dan pelik perlahan-lahan mendekati model sekolah yang popular." },
+                { id: 227, title: "Call of the Night", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1351/124409.jpg", desc: "Budak sekolah yang mengalami insomnia bertemu vampir misteri pada malam hari." },
+                { id: 228, title: "Insomniacs After School", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1628/134107.jpg", desc: "Dua pelajar yang tidak boleh tidur menemui tempat persembunyian di balai cerap sekolah." },
+                { id: 229, title: "Rent-a-Girlfriend", rating: 4.0, img: "https://cdn.myanimelist.net/images/anime/1897/108342.jpg", desc: "Kazuya menyewa teman wanita selepas putus cinta, tetapi keadaan menjadi semakin rumit." },
+                { id: 230, title: "Lovely Complex", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/3/13508.jpg", desc: "Kisah komedi percintaan antara gadis tinggi dan lelaki pendek di sekolah tinggi." }
+            ],
+            "Sci-Fi & Fantasy": [
+                { id: 301, title: "Steins;Gate", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1935/127974.jpg", desc: "Saintis gila mencipta mesin masa menggunakan gelombang mikro dan menghadapi kesan garis masa." },
+                { id: 302, title: "Frieren: Beyond Journey's End", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1015/138025.jpg", desc: "Elf ahli sihir mengembara memahami ikatan manusia selepas wira kumpulan mereka mati." },
+                { id: 303, title: "Re:ZERO - Starting Life in Another World", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/11/79410.jpg", desc: "Subaru mempunyai kuasa kembali ke titik simpan masa lalu setiap kali dia mati di alam Isekai." },
+                { id: 304, title: "Mushoku Tensei: Jobless Reincarnation", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1530/117776.jpg", desc: "Lelaki dewasa dilahirkan semula di dunia magis dan bertekad menjalani hidup tanpa penyesalan." },
+                { id: 305, title: "Made in Abyss", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/6/86733.jpg", desc: "Budak perempuan dan robot mengembara ke lubang dalam misteri yang penuh bahaya." },
+                { id: 306, title: "Neon Genesis Evangelion", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1314/108941.jpg", desc: "Remaja dipaksa mengendali robot gergasi mecha menentang makhluk luar bernama Angel." },
+                { id: 307, title: "That Time I Got Reincarnated as a Slime", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1126/92881.jpg", desc: "Lelaki dilahirkan semula sebagai slime kuasawan dan membina persekutuan raksasa." },
+                { id: 308, title: "Psycho-Pass", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/5/43399.jpg", desc: "Dunia futuristik di mana niat jahat seseorang diukur sebelum jenayah berlaku." },
+                { id: 309, title: "Overlord", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/7/75427.jpg", desc: "Pemain permainan video terperangkap dalam watak raja kegelapan terkuat." },
+                { id: 310, title: "No Game No Life", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1070/91986.jpg", desc: "Dua adik-beradik genius pemain game dipindahkan ke dunia di mana segalanya ditentukan melalui permainan." },
+                { id: 311, title: "Dr. STONE", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1613/102576.jpg", desc: "Manusia bertukar menjadi batu dan Senku menggunakan sains untuk membina semula peradaban." },
+                { id: 312, title: "Fate/stay night: Unlimited Blade Works", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/12/67299.jpg", desc: "Shirou bertarung dalam pertempuran sihir mempertahankan prinsip keadilannya." },
+                { id: 313, title: "Cowboy Bebop", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/4/19644.jpg", desc: "Pemburu ganjaran angkasa lepas menjelajah galaksi berlatarkan muzik jazz." },
+                { id: 314, title: "Code Geass: Lelouch of the Rebellion", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1032/135088.jpg", desc: "Strategi catur dan perang mecha dalam pencarian revolusi kebebasan." },
+                { id: 315, title: "Sword Art Online", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/11/39717.jpg", desc: "Pemain terperangkap dalam VRMMORPG di mana kematian dalam game bererti kematian di alam nyata." },
+                { id: 316, title: "The Eminence in Shadow", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1875/128403.jpg", desc: "Cid berlagak seperti minda utama belakang tabir, tanpa menyedari dongengnya adalah benar." },
+                { id: 317, title: "86 EIGHTY-SIX", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1987/117507.jpg", desc: "Diskriminasi dan peperangan dron tanpa pemandu yang dikendalikan oleh tentera terbuang." },
+                { id: 318, title: "Land of the Lustrous", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/11/88210.jpg", desc: "Makhluk berbentuk permata bertarung mempertahankan diri daripada ancaman makhluk bulan." },
+                { id: 319, title: "Shinsekai Yori (From the New World)", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/10/40957.jpg", desc: "Masyarakat dystopia masa depan dengan kuasa telekinesis menyimpan rahsia gelap." },
+                { id: 320, title: "Log Horizon", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/8/53801.jpg", desc: "Ribuan pemain terperangkap dalam game dalam talian membina undang-undang dan ekonomi." },
+                { id: 321, title: "Puella Magi Madoka Magica", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/11/28650.jpg", desc: "Sisi gelap menjadi gadis sihir yang penuh dengan takdir tragis." },
+                { id: 322, title: "Parasyte -the maxim-", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/3/73178.jpg", desc: "Makhluk asing parasit menduduki tangan kanan Shinichi dan mereka perlu bekerjasama." },
+                { id: 323, title: "World Trigger", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/6/68311.jpg", desc: "Agensi pertahanan membendung pencerobohan makhluk dimensi lain dipanggil Neighbor." },
+                { id: 324, title: "Hell's Paradise", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1660/134327.jpg", desc: "Banduan hukuman mati dihantar ke pulau misteri bertuah untuk mencari eliksir kehidupan." },
+                { id: 325, title: "Shadows House", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1376/113854.jpg", desc: "Rumah agam dikuasai bayangan hitam yang menggunakan boneka hidup sebagai muka mereka." },
+                { id: 326, title: "Shangri-La Frontier", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1221/138379.jpg", desc: "Pemain game 'sampah' mencuba permainan VR terhebat dan menguasainya." },
+                { id: 327, title: "Uncle from Another World", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/1202/124328.jpg", desc: "Bapa saudara koma 17 tahun kembali dari dunia Isekai membawa kuasa sihir ke Jepun moden." },
+                { id: 328, title: "The Vision of Escaflowne", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/10/19638.jpg", desc: "Gadis sekolah dipindahkan ke dunia fantasy Gaea yang penuh peperangan naga dan robot." },
+                { id: 329, title: "Outlaw Star", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/2/19639.jpg", desc: "Kru kapal angkasa tercanggih mencari khazanah tersembunyi Leyline." },
+                { id: 330, title: "Seraph of the End", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/5/73473.jpg", desc: "Manusia bertarung menentang kuasa vampir selepas wabak membunuh majoriti dewasa." }
+            ],
+            "Slice of Life": [
+                { id: 401, title: "Bocchi the Rock!", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1448/127956.jpg", desc: "Gadis cemas bersosial menyertai band muzik dan berusaha menjadi pemain gitar hebat." },
+                { id: 402, title: "Spy x Family", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1441/122795.jpg", desc: "Pengintip, pembunuh upahan, dan budak pembaca fikiran membina keluarga olok-olok." },
+                { id: 403, title: "Violet Evergarden", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1797/90903.jpg", desc: "Bekas tentera wanita menjadi penulis surat untuk memahami maksud perkataan 'Cinta'." },
+                { id: 404, title: "Laid-Back Camp (Yuru Camp)", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/8/89823.jpg", desc: "Keindahan perkhemahan santai waktu musim sejuk berlatarkan pemandangan Gunung Fuji." },
+                { id: 405, title: "Barakamon", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/11/64673.jpg", desc: "Penulis kaligrafi bandar berpindah ke kampung luar bandar untuk mencari inspirasi seni." },
+                { id: 406, title: "K-On!", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/10/21407.jpg", desc: "Kelab muzik ringan sekolah tinggi yang dipenuhi perbualan teh dan lagu comel." },
+                { id: 407, title: "March Comes in Like a Lion", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/6/82898.jpg", desc: "Pemain Shogi profesional yang kesepian ditemani oleh tiga beradik perempuan yang hangat." },
+                { id: 408, title: "Grand Blue Dreaming", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1121/93482.jpg", desc: "Kehidupan kelab menyelam universiti yang dipenuhi komedi lucu dan pesta." },
+                { id: 409, title: "Natsume's Book of Friends", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/13/9253.jpg", desc: "Natsume mengembalikan nama-nama roh (Yokai) yang dicatat dalam buku warisan neneknya." },
+                { id: 410, title: "Nichijou - My Ordinary Life", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/3/75617.jpg", desc: "Komedi atmosfera surrealis mengenai kehidupan harian yang tidak munasabah." },
+                { id: 411, title: "Non Non Biyori", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/11/53413.jpg", desc: "Kehidupan tenang dan santai empat pelajar di sekolah desa luar bandar." },
+                { id: 412, title: "Hyouka", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/13/36165.jpg", desc: "Pelajar jimat tenaga menyelesaikan misteri kecil sekolah atas desakan rakan ingin tahu." },
+                { id: 413, title: "Saiki K. (The Disastrous Life of Saiki K.)", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/10/80940.jpg", desc: "Saiki cuba menyembunyikan kuasa psiko dahsyatnya daripada rakan-rakan sekolah yang bising." },
+                { id: 414, title: "A Place Further Than The Universe", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/10/89678.jpg", desc: "Empat gadis sekolah memulakan pengembaraan mencabar menuju ke Antartika." },
+                { id: 415, title: "Dragon Maid Miss Kobayashi", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/5/85434.jpg", desc: "Naga dari dunia lain bertukar menjadi pelayan rumah untuk wanita pekerja pejabat." },
+                { id: 416, title: "Silver Spoon", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/5/50889.jpg", desc: "Pelajar bandar mendaftar ke sekolah pertanian dan mempelajari makna sebenar kehidupan." },
+                { id: 417, title: "Usagi Drop", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/2/29665.jpg", desc: "Lelaki bujang umur 30 tahun mengambil keputusan menjaga anak luar nikah datuknya." },
+                { id: 418, title: "Flying Witch", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/9/78913.jpg", desc: "Ahli sihir muda berpindah ke rumah saudara di Aomori untuk latihan sihir harian." },
+                { id: 419, title: "Tanaka-kun is Always Listless", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/8/78888.jpg", desc: "Tanaka yang sentiasa malas dibantu oleh kawannya Ohta dalam aktiviti seharian." },
+                { id: 420, title: "Kakushigoto", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1826/105822.jpg", desc: "Pelukis manga lucah menyembunyikan kerjanya daripada anak perempuan kesayangannya." },
+                { id: 421, title: "Sweetness & Lightning", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/3/80009.jpg", desc: "Guru duda dan anak perempuannya belajar memasak hidangan enak bersama pelajar." },
+                { id: 422, title: "Do It Yourself!!", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/1301/127110.jpg", desc: "Kisah pertukangan DIY di kalangan gadis-gadis sekolah menengah." },
+                { id: 423, title: "Super Cub", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1917/112678.jpg", desc: "Gadis kesepian menemui kebebasan dan kawan baharu selepas membeli motosikal Honda Super Cub terpakai." },
+                { id: 424, title: "Hakumei and Mikochi", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/4/89914.jpg", desc: "Kehidupan harian dua kerdil bersaiz 9cm yang tinggal di dalam hutan." },
+                { id: 425, title: "Aria the Animation", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/2/81589.jpg", desc: "Pengemudi gondola melayan tetamu di planet Mars yang telah diubah seperti Venice." },
+                { id: 426, title: "Gakuen Babysitters", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/12/89396.jpg", desc: "Pelajar sekolah tinggi bekerja di pusat asuhan kanak-kanak di sekolahnya." },
+                { id: 427, title: "Kimi to Boku", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/13/33941.jpg", desc: "Empat rakan persahabatan sejak kecil mengharungi zaman persekolahan bersama." },
+                { id: 428, title: "Lucky Star", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/13/8112.jpg", desc: "Perbualan rawak dan perbincangan budaya otaku di kalangan empat gadis sekolah." },
+                { id: 429, title: "Daily Lives of High School Boys", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/8/35223.jpg", desc: "Gelagat lucu dan imaginasi merapu pelajar lelaki sekolah tinggi." },
+                { id: 430, title: "Tamako Market", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/12/46093.jpg", desc: "Kehidupan manis anak pembuat Mochi bersama burung bercakap misteri." }
+            ],
+            "Thriller & Mystery": [
+                { id: 501, title: "Death Note", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/9/9444.jpg", desc: "Pelajar genius mendapat buku nota yang boleh membunuh sesiapa sahaja yang ditulis namanya." },
+                { id: 502, title: "Monster", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/10/18793.jpg", desc: "Pembedah otak menyelamatkan nyawa seorang budak yang membesar menjadi pembunuh bersiri." },
+                { id: 503, title: "The Promised Neverland (S1)", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1125/96929.jpg", desc: "Anak-anak yatim mendapat tahu rumah mereka sebenarnya ladang ternakan untuk iblis." },
+                { id: 504, title: "ERASED", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/10/77957.jpg", desc: "Lelaki dihantar kembali ke masa persekolahan untuk menghalang penculikan rakan sekelas." },
+                { id: 505, title: "Steins;Gate 0", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1375/91216.jpg", desc: "Garis masa alternatif di mana Okabe gagal menyelamatkan Kurisu dan berdepan perang." },
+                { id: 506, title: "Paranoia Agent", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/11/13013.jpg", desc: "Penyiasatan kes penyerang bersiri misteri menggunakan kayu pemukul besbol." },
+                { id: 507, title: "Summertime Rendering", rating: 4.8, img: "https://cdn.myanimelist.net/images/anime/1120/120796.jpg", desc: "Shinpei pulang ke pulau asal dan berdepan kejadian pembunuhan serta entiti bayangan." },
+                { id: 508, title: "Psycho-Pass 2", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/12/66883.jpg", desc: "Ancaman baharu daripada penjenayah yang tidak dapat dikesan oleh Sistem Sibyl." },
+                { id: 509, title: "Another", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/4/75509.jpg", desc: "Sumpahan misteri kelas 3-3 menyebabkan kematian ngeri pelajar satu demi satu." },
+                { id: 510, title: "Tomodachi Game", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1247/121324.jpg", desc: "Sekumpulan rakan dipaksa bermain permainan psikologi untuk menyelesaikan hutang." },
+                { id: 511, title: "ID: INVADED", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/1210/104630.jpg", desc: "Penyiasat masuk ke dalam alam bawah sedar pembunuh untuk menyelesaikan kes." },
+                { id: 512, title: "Classroom of the Elite", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/5/86830.jpg", desc: "Ayanokouji mengendalikan strategi dari sebalik tabir di sekolah elit berprestij." },
+                { id: 513, title: "Link Click (Shiguang Dailiren)", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1101/114631.jpg", desc: "Dua pemuda menggunakan foto untuk memasuki masa lalu demi menyelesaikan tugasan pelanggan." },
+                { id: 514, title: "Odd Taxi", rating: 4.9, img: "https://cdn.myanimelist.net/images/anime/1962/113524.jpg", desc: "Pemandu teksi walrus terlibat dalam kes kehilangan gadis sekolah misteri." },
+                { id: 515, title: "Shiki", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/12/25091.jpg", desc: "Sebuah kampung terpencil dilanda kematian pelik selepas keluarga misteri berpindah." },
+                { id: 516, title: "Mirai Nikki (Future Diary)", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/13/33465.jpg", desc: "12 pemegang diari masa depan berlawan hingga mati untuk menjadi dewa baharu." },
+                { id: 517, title: "Higurashi: When They Cry", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/12/11453.jpg", desc: "Peristiwa berdarah dan gelung masa berulang di kampung Hinamizawa." },
+                { id: 518, title: "BACCANO!", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/3/12313.jpg", desc: "Kisah alkimia, mafia, dan sifat tidak mati bertembung di atas kereta api transkontinental." },
+                { id: 519, title: "Terror in Resonance", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/13/65027.jpg", desc: "Dua remaja genius melakukan serangan bom teka-teki untuk membongkar rahsia kerajaan." },
+                { id: 520, title: "Darker than Black", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/6/21151.jpg", desc: "Manusia yang mendapat kuasa luar biasa beroperasi sebagai ejen rahsia di Tokyo." },
+                { id: 521, title: "Danganronpa: The Animation", rating: 4.3, img: "https://cdn.myanimelist.net/images/anime/4/51463.jpg", desc: "Pelajar elit terperangkap di sekolah dan dipaksa membunuh tanpa ditangkap." },
+                { id: 522, title: "Deadman Wonderland", rating: 4.2, img: "https://cdn.myanimelist.net/images/anime/9/28438.jpg", desc: "Ganta dituduh membunuh rakan sekelas dan dihantar ke penjara taman tema yang kejam." },
+                { id: 523, title: "Zankyou no Terror", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/13/65027.jpg", desc: "Permainan teka-teki ancaman bom yang menggemparkan polis bandar Tokyo." },
+                { id: 524, title: "Ajin: Demi-Human", rating: 4.4, img: "https://cdn.myanimelist.net/images/anime/12/77983.jpg", desc: "Pelajar mendapat tahu dia ialah Ajin (manusia abadi) dan diburu oleh pihak makmal." },
+                { id: 525, title: "Moriarty the Patriot", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1094/109260.jpg", desc: "Moriarty menggunakan kegeniusannya untuk meruntuhkan sistem bangsawan rasuah di London." },
+                { id: 526, title: "Gosick", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/6/28005.jpg", desc: "Pelajar Jepun bersama gadis genius seperti boneka menyelesaikan misteri di Eropah." },
+                { id: 527, title: "91 Days", rating: 4.6, img: "https://cdn.myanimelist.net/images/anime/13/80515.jpg", desc: "Kisah balas dendam seorang pemuda terhadap keluarga mafia yang membunuh keluarganya." },
+                { id: 528, title: "Kakegurui", rating: 4.3, img: "https://cdn.myanimelist.net/images/anime/8/86872.jpg", desc: "Sekolah elit di mana hirarki murid ditentukan menerusi perjudian berisiko tinggi." },
+                { id: 529, title: "Talentless Nana", rating: 4.5, img: "https://cdn.myanimelist.net/images/anime/1004/108990.jpg", desc: "Gadis tanpa kuasa ditugaskan menghapuskan pelajar berkuasa di pulau terpencil." },
+                { id: 530, title: "Bungo Stray Dogs 3rd Season", rating: 4.7, img: "https://cdn.myanimelist.net/images/anime/1536/99320.jpg", desc: "Perebutan kuasa dan helah psikologi yang berlaku di bandar Yokohama." }
+            ]
+        };
+
+        // State Variables
+        let currentGenre = "All";
+        let searchQuery = "";
+
+        // Elements
+        const animeGrid = document.getElementById("animeGrid");
+        const genreTabs = document.getElementById("genreTabs");
+        const searchInput = document.getElementById("searchInput");
+        const emptyState = document.getElementById("emptyState");
+        const animeCount = document.getElementById("animeCount");
+        const currentCategoryTitle = document.getElementById("currentCategoryTitle");
+
+        // Initialization
+        window.onload = () => {
+            renderTabs();
+            renderAnime();
+        };
+
+        // Render Tabs
+        function renderTabs() {
+            const genres = ["All", ...Object.keys(animeData)];
+            genreTabs.innerHTML = genres.map(genre => {
+                const isActive = genre === currentGenre;
+                return `
+                    <button onclick="setGenre('${genre}')" 
+                        class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                            isActive 
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                        }">
+                        ${genre === 'All' ? '🔥 Semua Genre' : genre}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Set Active Genre
+        function setGenre(genre) {
+            currentGenre = genre;
+            currentCategoryTitle.innerText = genre === 'All' ? 'Semua Genre' : `Genre: ${genre}`;
+            renderTabs();
+            renderAnime();
+        }
+
+        // Get Filtered Data
+        function getFilteredAnime() {
+            let list = [];
+            if (currentGenre === "All") {
+                Object.keys(animeData).forEach(g => {
+                    animeData[g].forEach(item => list.push({ ...item, genre: g }));
+                });
+            } else {
+                list = animeData[currentGenre].map(item => ({ ...item, genre: currentGenre }));
+            }
+
+            if (searchQuery.trim() !== "") {
+                list = list.filter(item => 
+                    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    item.desc.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+
+            return list;
+        }
+
+        // Render Stars Component
+        function renderStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalf = rating % 1 >= 0.5;
+            let starsHtml = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<i class="fa-solid fa-star"></i>';
+            }
+            if (hasHalf) {
+                starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+            }
+            const emptyStars = 5 - Math.ceil(rating);
+            for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<i class="fa-regular fa-star"></i>';
+            }
+            return starsHtml;
+        }
+
+        // Render Cards Anime Grid
+        function renderAnime() {
+            const list = getFilteredAnime();
+            animeCount.innerText = list.length;
+
+            if (list.length === 0) {
+                animeGrid.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+            animeGrid.innerHTML = list.map(item => `
+                <div onclick="openModal(${item.id})" class="group bg-slate-800/60 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1">
+                    <!-- Image Wrapper -->
+                    <div class="relative aspect-[3/4] overflow-hidden bg-slate-950">
+                        <img src="${item.img}" alt="${item.title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
+                        
+                        <!-- Genre Badge -->
+                        <span class="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-900/80 backdrop-blur-md text-indigo-300 border border-indigo-500/20">
+                            ${item.genre}
+                        </span>
+
+                        <!-- Rating Badge -->
+                        <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-1 text-amber-400 text-xs font-bold bg-slate-900/90 px-2 py-1 rounded-lg backdrop-blur-md">
+                                <i class="fa-solid fa-star text-[10px]"></i>
+                                <span>${item.rating}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-3.5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-100 group-hover:text-indigo-400 transition-colors line-clamp-1 mb-1">${item.title}</h4>
+                            <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${item.desc}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search Input Listener
+        searchInput.addEventListener("input", (e) => {
+            searchQuery = e.target.value;
+            renderAnime();
+        });
+
+        // Modal Functions
+        function openModal(id) {
+            let anime = null;
+            let foundGenre = "";
+
+            Object.keys(animeData).forEach(g => {
+                const item = animeData[g].find(a => a.id === id);
+                if (item) {
+                    anime = item;
+                    foundGenre = g;
+                }
+            });
+
+            if (!anime) return;
+
+            document.getElementById("modalImg").src = anime.img;
+            document.getElementById("modalTitle").innerText = anime.title;
+            document.getElementById("modalGenre").innerText = foundGenre;
+            document.getElementById("modalDesc").innerText = anime.desc;
+            document.getElementById("modalScore").innerText = `${anime.rating} / 5.0`;
+            document.getElementById("modalStars").innerHTML = renderStars(anime.rating);
+
+            document.getElementById("animeModal").classList.remove("hidden");
+            document.body.style.overflow = "hidden"; // Disable scroll when modal open
+        }
+
+        function closeModal() {
+            document.getElementById("animeModal").classList.add("hidden");
+            document.body.style.overflow = "auto";
+        }
+
+        // Close Modal on Outside Click
+        document.getElementById("animeModal").addEventListener("click", (e) => {
+            if (e.target.id === "animeModal") {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
